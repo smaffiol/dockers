@@ -8,11 +8,14 @@ ARG beast_version
 ARG babel_version
 ARG beast_packages_folder_name
 RUN apt-get update -y
-RUN apt-get install -y autoconf build-essential unzip wget git openjdk-8-jre
+RUN apt-get install -y autoconf build-essential unzip wget git openjdk-8-jdk libtool
 # Install Beagle
 RUN git clone --depth=1 https://github.com/beagle-dev/beagle-lib.git
 WORKDIR /beagle-lib
-RUN ./autogen.sh & ./configure & make & make install
+RUN ./autogen.sh
+RUN ./configure 
+RUN make 
+RUN make install
 WORKDIR /
 RUN rm -rf beagle-lib
 # Install Beast2
