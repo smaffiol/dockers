@@ -1,0 +1,56 @@
+FROM ubuntu:16.04
+# FROM continuumio/anaconda
+# Install CellProfiler dependencies 
+RUN apt-get -y update && \
+apt-get -y install \
+wget \
+python-pytest \ 
+build-essential \
+python-mysqldb \
+python-sqlite \
+#python-seaborn \
+#python-sklearn \
+#python-mock \
+#python-pandas \
+cython \ 
+git \ 
+libmysqlclient-dev \ 
+libhdf5-dev \ 
+libxml2-dev \ 
+libxslt1-dev \ 
+openjdk-8-jdk \ 
+python-dev \ 
+python-pip \ 
+python-h5py \ 
+#python-matplotlib \ 
+#python-scipy \ 
+#python-numpy \ 
+python-wxgtk3.0 \ 
+python-zmq \
+#python-vigra \
+python-chardet
+# RUN pip install --upgrade pip
+WORKDIR /usr/local/src
+# Update python-chardet package
+# RUN pip install chardet --upgrade
+# Install conda packages
+# RUN conda install qt sip pyqt matplotlib zlib curl pycurl 
+# RUN conda install -c ilastik ilastik-everything
+# Install CellProfiler 
+RUN apt-get -y remove python-zmq  
+RUN git clone https://github.com/CellProfiler/CellProfiler.git 
+WORKDIR /usr/local/src/CellProfiler 
+ARG version=3.0.0 
+RUN git checkout tags/$version
+RUN pip install --upgrade pip
+RUN pip install --editable . 
+#RUN pip install --upgrade --user --editable .
+# Fix init and zombie process reaping problems using s6 overlay 
+#ADD https://github.com/just-containers/s6-overlay/releases/download/v1.11.0.1/s6-overlay-amd64.tar.gz /tmp/ 
+#RUN gunzip -c /tmp/s6-overlay-amd64.tar.gz | tar -xf - -C / 
+# Workarounds: in 2.2.0 that breaks the java bindings in prokaryote
+RUN pip uninstall -y prokaryote
+RUN pip install prokaryote
+ENTRYPOINT ["/usr/local/bin/cellprofiler"] 
+CMD ["--run", "--run-headless", "--help"]
+

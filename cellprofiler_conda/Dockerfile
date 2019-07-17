@@ -2,17 +2,22 @@ FROM continuumio/miniconda
 # FROM continuumio/anaconda
 # Install CellProfiler dependencies 
 
-ARG conda_environment
-ARG cp_run_script
-RUN apt -y install default-libmysqlclient-dev gcc g++  && \
-useradd -ms /bin/bash bblab
-ADD $conda_environment /tmp/cp.yaml
-ADD $cp_run_script /home/bblab/run_cellprofiler.sh
-RUN chown bblab /home/bblab/run_cellprofiler.sh
+RUN apt-get update && \
+apt -y install default-libmysqlclient-dev gcc g++ && \
+useradd -ms /bin/bash bblab && \ 
+chown -R bblab /home/bblab/ 
 USER bblab
+ADD scripts/* /tmp/
+ENV JAVA_HOME=/home/bblab/.conda/envs/cellprofiler-3.1.8
+ENV PATH="${PATH}:$JAVA_HOME/bin"
 RUN echo ". /opt/conda/etc/profile.d/conda.sh" >> /home/bblab/.bashrc && \
 echo "conda activate base" >> /home/bblab/.bashrc && \
-chmod +x /home/bblab/run_cellprofiler.sh
-ENV JAVA_HOME=/home/bblab/.conda/envs/cellprofiler-3.1.8
-RUN conda env create -f /tmp/cp.yaml
-ENTRYPOINT ["/home/bblab/run_cellprofiler.sh"] 
+echo "conda activate cellprofiler-3.1.8" >> /home/bblab/.bashrc && \
+conda env create -f /tmp/cp.yaml && \
+#conda env create -f /tmp/cp318a.yaml && \
+#conda env update -f /tmp/cp318b.yaml && \
+conda clean --yes --all  
+#cp /tmp/run_cellprofiler.sh /home/bblab/run_cellprofiler.sh && \
+#chmod +x /home/bblab/run_cellprofiler.sh
+WORKDIR /home/bblab/
+ENTRYPOINT ["cellprofiler"] 
